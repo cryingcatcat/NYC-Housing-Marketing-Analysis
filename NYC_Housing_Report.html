@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Housing Market Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #3498db;
+            --highlight: #2980b9;
+            --text: #2c3e50;
+            --text-muted: #7f8c8d;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 80px 20px 60px;
+            background: url('./heading_bg.jpg') center center / cover no-repeat;
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Dark overlay for better text readability */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+
+        h1 {
+            font-size: 3em;
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            color: white;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .due-date {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--card-bg);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95em;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* Sections */
+        section {
+            margin: 60px 0;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px var(--shadow);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 2em;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.4em;
+            font-weight: 400;
+            margin: 30px 0 15px;
+            color: var(--text);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.2);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Team Members */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .team-member {
+            background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .team-member:hover {
+            background: linear-gradient(135deg, #b2ebf2 0%, #80deea 100%);
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .member-uni {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        /* Collapsible Content */
+        .collapsible {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe4b3 100%);
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .collapsible:hover {
+            background: linear-gradient(135deg, #ffe4b3 0%, #ffd280 100%);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+        }
+
+        .collapsible::after {
+            content: '+';
+            font-size: 1.5em;
+            color: var(--accent);
+            transition: transform 0.3s;
+        }
+
+        .collapsible.active::after {
+            transform: rotate(45deg);
+        }
+
+        .content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 20px;
+        }
+
+        .content.active {
+            max-height: 2000px;
+            padding: 20px;
+        }
+
+        /* Graph Gallery */
+        .graph-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .graph-item {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .graph-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2);
+        }
+
+        .graph-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .graph-info {
+            padding: 15px;
+        }
+
+        .graph-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .graph-desc {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Key Insights */
+        .insight-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        .insight-list li {
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px var(--shadow);
+        }
+
+        .insight-list li:hover {
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+            transform: translateX(10px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .insight-list strong {
+            color: var(--accent);
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .data-table th {
+            background: var(--accent);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+
+        .data-table tr:hover td {
+            background: #e3f2fd;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            margin: 5% auto;
+            max-width: 90%;
+            max-height: 85vh;
+            display: block;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 30px;
+            right: 50px;
+            color: white;
+            font-size: 40px;
+            font-weight: 300;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .close-modal:hover {
+            transform: scale(1.2);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .tab:hover {
+            background: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.9em;
+            border-top: 1px solid var(--border);
+            margin-top: 60px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            section {
+                padding: 25px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .highlight-text {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Interactive hover effects */
+        .interactive-stat {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interactive-stat::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .interactive-stat:hover::before {
+            left: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <h1>NYC Housing Market Analysis</h1>
+        <p class="subtitle">Comprehensive Exploratory Data Analysis</p>
+        <p class="due-date">Due: November 10th, 2025</p>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <ul>
+            <li><a href="#team">Team</a></li>
+            <li><a href="#data">Data</a></li>
+            <li><a href="#statistics">Statistics</a></li>
+            <li><a href="#visualizations">Visualizations</a></li>
+            <li><a href="#insights">Insights</a></li>
+            <li><a href="#objectives">Objectives</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Section 1: Team -->
+        <section id="team">
+            <h2>1. Project Team</h2>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-name">Chunze Jiang</div>
+                    <div class="member-uni">UNI: cj2875</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-name">Zhongchen Jian</div>
+                    <div class="member-uni">UNI: zj2432</div>
+                </div>
+                <div class="team-member">
+                    <div class="member-name">Junyang Li</div>
+                    <div class="member-uni">UNI: jl7230</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Data Description -->
+        <section id="data">
+            <h2>2. Data Description</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card interactive-stat">
+                    <div class="stat-value">4,801</div>
+                    <div class="stat-label">Total Properties</div>
+                </div>
+                <div class="stat-card interactive-stat">
+                    <div class="stat-value">17</div>
+                    <div class="stat-label">Data Features</div>
+                </div>
+                <div class="stat-card interactive-stat">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">NYC Boroughs</div>
+                </div>
+                <div class="stat-card interactive-stat">
+                    <div class="stat-value">99.6%</div>
+                    <div class="stat-label">Data Quality</div>
+                </div>
+            </div>
+
+            <div class="collapsible">
+                <span>Dataset Overview</span>
+            </div>
+            <div class="content">
+                <p>Comprehensive real estate data spanning New York City boroughs and surrounding areas. Includes broker information, property types (Co-op, Condo, House, Multi-family, Townhouse), pricing, physical characteristics (beds, baths, square footage), and precise geographic coordinates.</p>
+            </div>
+
+            <div class="collapsible">
+                <span>Key Variables</span>
+            </div>
+            <div class="content">
+                <ul class="insight-list">
+                    <li><strong>PRICE:</strong> $2.5K - $195M range</li>
+                    <li><strong>TYPE:</strong> 13 property categories</li>
+                    <li><strong>BEDS:</strong> 1-19 bedrooms</li>
+                    <li><strong>BATH:</strong> 1-32 bathrooms</li>
+                    <li><strong>PROPERTYSQFT:</strong> 230-48,000 sq ft</li>
+                    <li><strong>LOCATION:</strong> Latitude/Longitude coordinates</li>
+                </ul>
+            </div>
+
+            <div class="collapsible">
+                <span>Data Cleaning</span>
+            </div>
+            <div class="content">
+                <p>Filtered outliers beyond $200M, unrealistic room counts, and invalid entries. Retained 4,780 properties (99.56%) with excellent data integrity.</p>
+            </div>
+        </section>
+
+        <!-- Section 3: Statistics -->
+        <section id="statistics">
+            <h2>3. Descriptive Statistics</h2>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab(event, 'market-tab')">Market Overview</div>
+                <div class="tab" onclick="switchTab(event, 'property-tab')">Property Types</div>
+                <div class="tab" onclick="switchTab(event, 'correlation-tab')">Correlations</div>
+            </div>
+
+            <div id="market-tab" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card interactive-stat">
+                        <div class="stat-value">$1.89M</div>
+                        <div class="stat-label">Mean Price</div>
+                    </div>
+                    <div class="stat-card interactive-stat">
+                        <div class="stat-value">$825K</div>
+                        <div class="stat-label">Median Price</div>
+                    </div>
+                    <div class="stat-card interactive-stat">
+                        <div class="stat-value">2,114</div>
+                        <div class="stat-label">Avg Sq Ft</div>
+                    </div>
+                    <div class="stat-card interactive-stat">
+                        <div class="stat-value">3.3</div>
+                        <div class="stat-label">Avg Bedrooms</div>
+                    </div>
+                    <div class="stat-card interactive-stat">
+                        <div class="stat-value">2.3</div>
+                        <div class="stat-label">Avg Bathrooms</div>
+                    </div>
+                    <div class="stat-card interactive-stat">
+                        <div class="stat-value">$778</div>
+                        <div class="stat-label">Price per Sq Ft</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="property-tab" class="tab-content">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Property Type</th>
+                            <th>Count</th>
+                            <th>Market Share</th>
+                            <th>Median Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Co-op</td>
+                            <td>1,450</td>
+                            <td>30.3%</td>
+                            <td>$459,000</td>
+                        </tr>
+                        <tr>
+                            <td>House</td>
+                            <td>1,009</td>
+                            <td>21.1%</td>
+                            <td>$925,000</td>
+                        </tr>
+                        <tr>
+                            <td>Condo</td>
+                            <td>891</td>
+                            <td>18.6%</td>
+                            <td>$895,000</td>
+                        </tr>
+                        <tr>
+                            <td>Multi-family</td>
+                            <td>712</td>
+                            <td>14.9%</td>
+                            <td>$975,000</td>
+                        </tr>
+                        <tr>
+                            <td>Townhouse</td>
+                            <td>298</td>
+                            <td>6.2%</td>
+                            <td>$2,200,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="correlation-tab" class="tab-content">
+                <h3>Price Correlations</h3>
+                <ul class="insight-list">
+                    <li><strong>Square Footage:</strong> 0.480 (strongest predictor)</li>
+                    <li><strong>Bathrooms:</strong> 0.386 (moderate)</li>
+                    <li><strong>Bedrooms:</strong> 0.228 (weak)</li>
+                    <li><strong>Beds ↔ Baths:</strong> 0.705 (strong interdependence)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 4: Visualizations -->
+        <section id="visualizations">
+            <h2>4. Data Visualizations</h2>
+            <p style="margin-bottom: 30px; color: var(--text-muted);">Click any graph to view full size</p>
+
+            <div class="graph-gallery">
+                <div class="graph-item" onclick="openModal('./graph1_price_distribution.png')">
+                    <img src="./graph1_price_distribution.png" alt="Price Distribution" onerror="this.src='file:///mnt/user-data/outputs/graph1_price_distribution.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Price Distribution</div>
+                        <div class="graph-desc">Right-skewed distribution with log-scale normalization reveals median clustering at $825K</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph2_price_by_type.png')">
+                    <img src="./graph2_price_by_type.png" alt="Price by Type" onerror="this.src='file:///mnt/user-data/outputs/graph2_price_by_type.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Price by Property Type</div>
+                        <div class="graph-desc">Townhouses command premium; co-ops most affordable with tight distribution</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph3_price_vs_sqft.png')">
+                    <img src="./graph3_price_vs_sqft.png" alt="Price vs Square Footage" onerror="this.src='file:///mnt/user-data/outputs/graph3_price_vs_sqft.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Price vs Square Footage</div>
+                        <div class="graph-desc">Positive correlation varies by type; townhouses show steepest gradient</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph4_geographic_distribution.png')">
+                    <img src="./graph4_geographic_distribution.png" alt="Geographic Distribution" onerror="this.src='file:///mnt/user-data/outputs/graph4_geographic_distribution.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Geographic Distribution</div>
+                        <div class="graph-desc">Manhattan's price concentration; spatial stratification across boroughs</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph5_3d_beds_bath_price.png')" style="border: 2px solid var(--highlight);">
+                    <img src="./graph5_3d_beds_bath_price.png" alt="3D Visualization" onerror="this.src='file:///mnt/user-data/outputs/graph5_3d_beds_bath_price.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">🌟 3D: Beds × Baths × Price × SqFt</div>
+                        <div class="graph-desc">Four-dimensional analysis reveals complex pricing dynamics</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph6_top_localities.png')">
+                    <img src="./graph6_top_localities.png" alt="Top Localities" onerror="this.src='file:///mnt/user-data/outputs/graph6_top_localities.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Top 15 Localities</div>
+                        <div class="graph-desc">Manhattan dominates with 52% market concentration</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph7_price_per_sqft.png')">
+                    <img src="./graph7_price_per_sqft.png" alt="Price per Sq Ft" onerror="this.src='file:///mnt/user-data/outputs/graph7_price_per_sqft.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Price per Square Foot</div>
+                        <div class="graph-desc">Normalized comparison shows similar efficiency across condos and co-ops</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph8_correlation_heatmap.png')">
+                    <img src="./graph8_correlation_heatmap.png" alt="Correlation Matrix" onerror="this.src='file:///mnt/user-data/outputs/graph8_correlation_heatmap.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Correlation Heatmap</div>
+                        <div class="graph-desc">Square footage emerges as strongest price predictor (0.48)</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph9_price_by_bedrooms.png')">
+                    <img src="./graph9_price_by_bedrooms.png" alt="Price by Bedrooms" onerror="this.src='file:///mnt/user-data/outputs/graph9_price_by_bedrooms.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Price by Bedroom Count</div>
+                        <div class="graph-desc">Dual-axis shows price escalation and distribution peak at 3 bedrooms</div>
+                    </div>
+                </div>
+
+                <div class="graph-item" onclick="openModal('./graph10_property_type_pie.png')">
+                    <img src="./graph10_property_type_pie.png" alt="Market Composition" onerror="this.src='file:///mnt/user-data/outputs/graph10_property_type_pie.png'">
+                    <div class="graph-info">
+                        <div class="graph-title">Market Composition</div>
+                        <div class="graph-desc">Co-ops constitute one-third of market; diverse buyer preferences</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Insights -->
+        <section id="insights">
+            <h2>5. Key Insights</h2>
+
+            <div class="collapsible">
+                <span>Market Structure</span>
+            </div>
+            <div class="content">
+                <ul class="insight-list">
+                    <li><strong>Extreme Heterogeneity:</strong> Mean ($1.89M) 2.3× median ($825K) indicates luxury-driven market</li>
+                    <li><strong>Type Premium:</strong> Townhouses command 2.7× co-op prices despite similar square footage</li>
+                    <li><strong>Manhattan Dominance:</strong> 52% market share creates centralized, high-liquidity environment</li>
+                </ul>
+            </div>
+
+            <div class="collapsible">
+                <span>Value Drivers</span>
+            </div>
+            <div class="content">
+                <ul class="insight-list">
+                    <li><strong>Space Over Rooms:</strong> Square footage (0.48) correlates stronger with price than bedrooms (0.23)</li>
+                    <li><strong>Diminishing Returns:</strong> Bathrooms show moderate correlation (0.39); additional units yield less value</li>
+                    <li><strong>Location Primacy:</strong> Geographic position often outweighs physical characteristics</li>
+                </ul>
+            </div>
+
+            <div class="collapsible">
+                <span>Investment Implications</span>
+            </div>
+            <div class="content">
+                <ul class="insight-list">
+                    <li><strong>Buyers:</strong> Prioritize $/sq ft and total space; explore outer boroughs for 30-50% savings</li>
+                    <li><strong>Sellers:</strong> Emphasize neighborhood prestige and space efficiency over bedroom count</li>
+                    <li><strong>Investors:</strong> Multi-family homes ($1.56M mean) offer balanced entry with income potential</li>
+                    <li><strong>Developers:</strong> Maximize square footage over room segmentation; open plans command premiums</li>
+                </ul>
+            </div>
+
+            <div class="collapsible">
+                <span>Geographic Patterns</span>
+            </div>
+            <div class="content">
+                <ul class="insight-list">
+                    <li><strong>Concentric Pricing:</strong> Premium decreases radiating from central Manhattan</li>
+                    <li><strong>Borough Opportunity:</strong> Queens, Brooklyn, Bronx offer 22% of listings with superior value</li>
+                    <li><strong>Market Velocity:</strong> 7% pending/contingent indicates healthy turnover, especially sub-$2M</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 6: Objectives -->
+        <section id="objectives">
+            <h2>6. Research Objectives</h2>
+
+            <h3>Primary Questions</h3>
+            <ul class="insight-list">
+                <li><strong>Q1:</strong> Which factors most strongly predict NYC housing prices?</li>
+                <li><strong>Q2:</strong> How do pricing patterns vary across property types and locations?</li>
+                <li><strong>Q3:</strong> What is the relationship between property size and price efficiency?</li>
+                <li><strong>Q4:</strong> How concentrated is market supply geographically and by type?</li>
+            </ul>
+
+            <h3>Analytical Goals</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Predictive Insights</div>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Build valuation models</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Market Inefficiencies</div>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Identify value gaps</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Premium Factors</div>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Quantify price drivers</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Segmentation</div>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Define market tiers</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" style="margin-bottom: 10px;">Benchmarks</div>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">Establish comparatives</p>
+                </div>
+            </ul>
+
+            <h3>Future Directions</h3>
+            <div class="collapsible">
+                <span>Advanced Analytics Roadmap</span>
+            </div>
+            <div class="content">
+                <ul class="insight-list">
+                    <li><strong>Predictive Modeling:</strong> ML-based automated valuation systems</li>
+                    <li><strong>Time Series:</strong> Historical trend analysis and cycle identification</li>
+                    <li><strong>Comparative Markets:</strong> Cross-city benchmarking (SF, LA, Boston)</li>
+                    <li><strong>Sentiment Analysis:</strong> Qualitative factor integration (schools, transit, culture)</li>
+                    <li><strong>Efficiency Testing:</strong> Time-to-sale optimization strategies</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section>
+            <h2>Conclusion</h2>
+            <p style="margin-bottom: 20px;">
+                Analysis of 4,780 NYC properties reveals a <span class="highlight-text">complex, segmented market</span> characterized by extreme heterogeneity, geographic concentration, and counterintuitive value drivers. Square footage emerges as the strongest price predictor, while property type and location command premiums independent of physical characteristics.
+            </p>
+            <p style="margin-bottom: 20px;">
+                NYC's unique co-operative prevalence (30% market share) and Manhattan's premium positioning (2× outer borough prices) distinguish this market from national patterns. These insights enable <span class="highlight-text">data-driven decision-making</span> across buyer, seller, investor, and developer stakeholder groups.
+            </p>
+            <p>
+                Future work extending into predictive modeling and temporal analysis promises deeper market intelligence. This foundation supports ongoing analytical refinement and strategic real estate investment optimization.
+            </p>
+        </section>
+    </div>
+
+    <!-- Modal for Full-Size Images -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>NYC Housing Market Analysis | November 2025</p>
+        <p style="margin-top: 10px; font-size: 0.85em;">Interactive Report | Data Science Project</p>
+    </footer>
+
+    <script>
+        // Scroll Progress Bar
+        window.onscroll = function() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progressBar").style.width = scrolled + "%";
+        };
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Collapsible Sections
+        const collapsibles = document.querySelectorAll('.collapsible');
+        collapsibles.forEach(collapsible => {
+            collapsible.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                content.classList.toggle('active');
+            });
+        });
+
+        // Tab Switching
+        function switchTab(evt, tabName) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Modal for Images
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Animate stats on scroll
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeIn 0.6s ease-out';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stat-card, .graph-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Interactive stat cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.animation = 'pulse 0.5s';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
